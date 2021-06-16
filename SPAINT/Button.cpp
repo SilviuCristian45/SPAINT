@@ -12,7 +12,8 @@ Button::Button(sf::Vector2f rectPosition, sf::Vector2f btnRectSize, sf::Color bt
 	_buttonRect.setPosition(rectPosition);
 	_buttonRect.setSize(btnRectSize);
 	_buttonRect.setFillColor(btnColor);
-
+	_buttonRect.setOutlineColor(sf::Color::White);
+	_buttonRect.setOutlineThickness(1);
 	//setam pozitia textului in interiorul butonului (la mijlocul rectshape-ului)
 	//std::cout << "Position of text : " << rectPosition.x + btnRectSize.x / 2 << " " << rectPosition.y + btnRectSize.y / 2 << std::endl;
 	_text.setPosition(rectPosition.x + btnRectSize.x/4, rectPosition.y + btnRectSize.y/4);
@@ -28,6 +29,11 @@ sf::RectangleShape Button::getbuttonRect(){
 
 sf::Text Button::getText(){
 	return _text;
+}
+
+sf::Color Button::getbtnColor()
+{
+	return _buttonRect.getFillColor();
 }
 
 //set-eri

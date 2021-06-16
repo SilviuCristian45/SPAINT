@@ -17,34 +17,47 @@
 //    }
 //}
 
-void OnClickMenuButton(sf::RenderWindow& window, Button& button, Canvas &canvas) {
+void OnClickButton(sf::RenderWindow& window, Button& button, Canvas &canvas) {
+    /*FOR MENU BUTTONS */
     if (button.isMouseOver(window) && button.getText().getString() == "save") {//daca a fost dat click pe butonul save
-        canvas.Export("png");
+        canvas.Export("jpg", window);
+    }
 
-        sf::Vector2u windowSize = window.getSize();//luam dimensiunea window-ului
-        
-        //parte din cod care preia o imagine cu tot ecranul aplicatiei
-        sf::Texture texture;
-        texture.create(windowSize.x, windowSize.y);
-        texture.update(window);
+    if (button.isMouseOver(window) && button.getText().getString() == "open") {
 
-        sf::Image screenshot = texture.copyToImage();
+    }
 
-        //o sa avem alta imagine in care o sa o cropam doar zona de lucru din imaginea de mai sus
-        sf::Image result;
-        result.create(875, 600);
-        result.copy(screenshot, 0, 0, sf::IntRect(25, 115, 900, 713), true);
-        
-        try
-        {
-            result.saveToFile("result.png");
-        }
-        catch (const std::exception& ex)
-        {
-            std::cout << "eroare la salvarea proiectului" << ex.what() << "\n";
-        }
-        
-        
+    if (button.isMouseOver(window) && button.getText().getString() == "new") {
+
+    }
+}
+
+void OnClickColorBtn(sf::RenderWindow& window, Button& button, sf::Color &color) {
+    /*FOR COLOR BUTTONS */
+
+    if (button.isMouseOver(window) && button.getbtnColor() == sf::Color::Green) {
+        std::cout << " green color selected \n";
+        color = sf::Color::Green;
+    }
+    if (button.isMouseOver(window) && button.getbtnColor() == sf::Color::Red) {
+        std::cout << " red color selected \n";
+        color = sf::Color::Red;
+    }
+    if (button.isMouseOver(window) && button.getbtnColor() == sf::Color::Blue) {
+        std::cout << " bllue color selected \n";
+        color = sf::Color::Blue;
+    }
+    if (button.isMouseOver(window) && button.getbtnColor() == sf::Color::Black) {
+        std::cout << " black color selected \n";
+        color = sf::Color::Black;
+    }
+    if (button.isMouseOver(window) && button.getbtnColor() == sf::Color::Magenta) {
+        std::cout << " purple color selected \n";
+        color = sf::Color::Magenta;
+    }
+    if (button.isMouseOver(window) && button.getbtnColor() == sf::Color::White) {
+        std::cout << " white color selected \n";
+        color = sf::Color::White;
     }
 }
 
@@ -59,10 +72,21 @@ int main()
 
     Button btnSave(sf::Vector2f(25,30), sf::Vector2f(150,70), sf::Color::Green, f, "save", sf::Color::White);
     Button btnOpen(sf::Vector2f(200, 30), sf::Vector2f(150, 70), sf::Color::Green, f, "open", sf::Color::White);
-    Button btnNew(sf::Vector2f(400, 30), sf::Vector2f(150, 70), sf::Color::Green, f, "new", sf::Color::White);
-    Button whiteCol(sf::Vector2f(1083, 137), sf::Vector2f(50, 50), sf::Color::White, f, "", sf::Color::White);
+    Button btnNew(sf::Vector2f(375, 30), sf::Vector2f(150, 70), sf::Color::Green, f, "new", sf::Color::White);
     
-    std::vector <sf::RectangleShape> pixels;//definim array-ul care va stoca pixelii sub forma de patratele 
+    sf::Vector2f btnColorSize(50, 50);
+
+    //Buttons for selecting color 
+    Button whiteCol(sf::Vector2f(1000, 137), btnColorSize, sf::Color::White, f, "", sf::Color::White);
+    Button redCol(sf::Vector2f(1200, 137), btnColorSize, sf::Color::Red, f, "", sf::Color::Red);
+    Button blackCol(sf::Vector2f(1000, 237), btnColorSize, sf::Color::Black, f, "", sf::Color::Black);
+    Button blueCol(sf::Vector2f(1200, 237), btnColorSize, sf::Color::Blue, f, "", sf::Color::Blue);
+    Button greenCol(sf::Vector2f(1000, 337), btnColorSize, sf::Color::Green, f, "", sf::Color::Green);
+    Button purpleCol(sf::Vector2f(1200, 337), btnColorSize, sf::Color::Magenta, f, "", sf::Color::Magenta);
+
+    sf::Color currentColor = sf::Color::Black;
+
+    std::vector <sf::CircleShape> pixels;//definim array-ul care va stoca pixelii sub forma de patratele 
                                             //care va vor fi desenati 
     bool isMouseClicked = false; //stores if mouse is clicked now 
 
@@ -86,12 +110,16 @@ int main()
                 case sf::Event::MouseButtonPressed: //if the user pressed any mouse button
                     if (event.mouseButton.button == sf::Mouse::Left) {//if the user pressed left click
                         //MenuButtonOnClick(window, btnSave, btnOpen, btnNew);
-                        OnClickMenuButton(window, btnSave, canvas);
+                        OnClickButton(window, btnSave, canvas);
+                        OnClickColorBtn(window, greenCol, currentColor);
+                        OnClickColorBtn(window, redCol, currentColor);
+                        OnClickColorBtn(window, whiteCol, currentColor);
+                        OnClickColorBtn(window, blackCol, currentColor);
+                        OnClickColorBtn(window, purpleCol, currentColor);
+                        OnClickColorBtn(window, blueCol, currentColor);
                         if (!isMouseClicked) { //if the mouse is not clicked yet (so no dragging) 
                             isMouseClicked = true; //the mouse was clicked 
                         }
-           
-
                     }
                     break;
                 case sf::Event::MouseButtonReleased:
@@ -108,11 +136,12 @@ int main()
         //LOGIC 
         if (isMouseClicked) {//if the mouse is still clicked theen set the 2 element of line (basicly dragging)
             sf::Vector2i mousePos = sf::Mouse::getPosition(window); //get mousePosition
-            //draw a pixel 
-            sf::RectangleShape sh(sf::Vector2f(pixelDimension, pixelDimension));
-            sh.setFillColor(sf::Color::Black);//set pixel color
-            sh.setPosition(sf::Vector2f(mousePos.x, mousePos.y));//set pixel position 
-            pixels.push_back(sh);
+            if (canvas.contains(mousePos)){//draw a pixel only if it is the canvas
+                sf::CircleShape sh2(10);
+                sh2.setPosition(sf::Vector2f(mousePos.x,mousePos.y));
+                sh2.setFillColor(currentColor);
+                pixels.push_back(sh2);
+            }
             std::cout << "Position of text : " << mousePos.x << " " << mousePos.y << std::endl;
         }
         
@@ -123,6 +152,12 @@ int main()
         btnOpen.draw(window);
         btnNew.draw(window);
         whiteCol.draw(window);
+        redCol.draw(window);
+        blueCol.draw(window);
+        greenCol.draw(window);
+        blackCol.draw(window);
+        purpleCol.draw(window);
+
         for (auto line : pixels) //desenam toate liniile desenate pana acum (sau punctele doar)
             window.draw(line);
         window.display();//afisam tot pe ecran 

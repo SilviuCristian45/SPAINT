@@ -1,4 +1,5 @@
 #include "Canvas.h"
+#include <windows.h>
 
 Canvas::Canvas(sf::Vector2f size, sf::Vector2f pos, sf::Color col)
 {
@@ -17,12 +18,44 @@ void Canvas::clear()
 	std::cout << "canvas cleared \n";
 }
 
-void Canvas::Export(std::string extension) {
+void Canvas::Export(std::string extension, sf::Window &window) {
 	std::cout << "exported project \n";
+    sf::Vector2u windowSize = window.getSize();//luam dimensiunea window-ului
+
+    //parte din cod care preia o imagine cu tot ecranul aplicatiei intr-o textura 
+    sf::Texture texture;
+    texture.create(windowSize.x, windowSize.y);
+    texture.update(window);
+
+    sf::Image screenshot = texture.copyToImage();// convertim in imagine textura de mai sus 
+
+    //o sa avem alta imagine in care o sa o cropam doar zona de lucru din imaginea de mai sus
+    sf::Image result;
+    result.create(875, 600);
+    result.copy(screenshot, 0, 0, sf::IntRect(25, 115, 900, 713), true);
+
+    try
+    {
+        result.saveToFile("result."+extension);//salvarea efectiva in memorie a proiectului 
+        MessageBoxA(NULL, "Proiect exportat cu succes!!", "Mesaj", MB_OKCANCEL | MB_ICONEXCLAMATION);
+    }
+    catch (const std::exception& ex)
+    {
+        std::cout << "eroare la salvarea proiectului" << ex.what() << "\n";
+    }
 }
 
 void Canvas::draw(sf::RenderWindow& win)
 {
 	win.draw(workSpace);
+}
+
+bool Canvas::contains(sf::Vector2i point)
+{
+    sf::Vector2f workSpacePostion = workSpace.getPosition();
+    sf::Vector2f workSpaceSize = workSpace.getSize();
+
+    return (point.x >= workSpacePostion.x && point.x <= workSpacePostion.x + workSpaceSize.x
+            && point.y >= workSpacePostion.y && point.y <= workSpacePostion.y + workSpaceSize.y);
 }
 

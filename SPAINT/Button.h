@@ -13,6 +13,7 @@ public:
 	//getters and setters
 	sf::RectangleShape getbuttonRect();
 	sf::Text getText();
+	sf::Color getbtnColor();
 
 	void setButtonRect(sf::RectangleShape buttonRect);
 	void setText(sf::Text text);
