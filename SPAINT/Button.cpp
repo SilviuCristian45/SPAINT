@@ -47,6 +47,11 @@ void Button::setText(sf::Text text)
 	_text = text;
 }
 
+void Button::setColor(sf::Color col)
+{
+	_buttonRect.setFillColor(col);
+}
+
 //metoda pt desenarea pe ecran a butonului 
 void Button::draw(sf::RenderWindow &screen)
 {

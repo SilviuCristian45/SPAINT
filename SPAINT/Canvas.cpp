@@ -1,5 +1,6 @@
 #include "Canvas.h"
 #include <windows.h>
+#include "Utils.h"
 
 Canvas::Canvas(sf::Vector2f size, sf::Vector2f pos, sf::Color col)
 {
@@ -18,7 +19,7 @@ void Canvas::clear()
 	std::cout << "canvas cleared \n";
 }
 
-void Canvas::Export(std::string extension, sf::Window &window) {
+void Canvas::Export(sf::Window &window) {
 	std::cout << "exported project \n";
     sf::Vector2u windowSize = window.getSize();//luam dimensiunea window-ului
 
@@ -36,8 +37,12 @@ void Canvas::Export(std::string extension, sf::Window &window) {
 
     try
     {
-        result.saveToFile("result."+extension);//salvarea efectiva in memorie a proiectului 
-        MessageBoxA(NULL, "Proiect exportat cu succes!!", "Mesaj", MB_OKCANCEL | MB_ICONEXCLAMATION);
+        std::string path = savefile();
+        std::cout << path << "\n";
+        if(path != "inchis"){ //daca a fost selectat un folder si denumit fisierul
+            result.saveToFile(path);//salvarea efectiva in memorie a proiectului 
+            MessageBoxA(NULL, "Proiect exportat cu succes!!", "Mesaj", MB_OKCANCEL | MB_ICONINFORMATION);
+        }
     }
     catch (const std::exception& ex)
     {

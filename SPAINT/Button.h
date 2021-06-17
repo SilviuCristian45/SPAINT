@@ -17,6 +17,7 @@ public:
 
 	void setButtonRect(sf::RectangleShape buttonRect);
 	void setText(sf::Text text);
+	void setColor(sf::Color);
 
 	void draw(sf::RenderWindow &screen);//trebuie declarata ca referinta ca nu se mai poate pune pe stiva inca un window.
 	bool isMouseOver(sf::RenderWindow&); //returns if the user clicked inside the button
