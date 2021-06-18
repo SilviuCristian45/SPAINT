@@ -70,7 +70,8 @@ int main()
     Button btnSave(sf::Vector2f(25,30), sf::Vector2f(150,70), sf::Color::Green, f, "save", sf::Color::White);
     Button btnOpen(sf::Vector2f(200, 30), sf::Vector2f(150, 70), sf::Color::Green, f, "open", sf::Color::White);
     Button btnNew(sf::Vector2f(375, 30), sf::Vector2f(150, 70), sf::Color::Green, f, "new", sf::Color::White);
-    
+    Button btnClear(sf::Vector2f(550, 30), sf::Vector2f(150, 70), sf::Color::Green, f, "clear", sf::Color::White);
+
     sf::Vector2f btnColorSize(50, 50);
 
     //Buttons for selecting color 
@@ -137,8 +138,7 @@ int main()
             }
         }
 
-        window.clear();//facem clear la ecran (pt update)
-        canvas.draw(window);
+        
 
         //LOGIC 
         if (isMouseClicked) {//if the mouse is still clicked theen set the 2 element of line (basicly dragging)
@@ -165,11 +165,13 @@ int main()
             std::cout << "Position of text : " << mousePos.x << " " << mousePos.y << std::endl;
         }
         
-       
         //partea de desenat
+        window.clear();//facem clear la ecran (pt update)
+        canvas.draw(window);
         btnSave.draw(window);
         btnOpen.draw(window);
         btnNew.draw(window);
+        btnClear.draw(window);
         whiteCol.draw(window);
         redCol.draw(window);
         blueCol.draw(window);
