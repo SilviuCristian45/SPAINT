@@ -1,5 +1,6 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
+
 #include <vector>
 #include <string>
 #include <Windows.h>
@@ -7,18 +8,23 @@
 #include "Button.h"
 #include "Canvas.h"
 
-void OnClickButton(sf::RenderWindow& window, Button& button, Canvas &canvas) {
+
+void OnClickButton(sf::RenderWindow& window, Button& button, Canvas& canvas, sf::Texture& background,sf::Sprite& backgroundSprite,std::vector<sf::CircleShape> &pixels,std::vector<sf::RectangleShape>& squares) {
     /*FOR MENU BUTTONS */
-    if (button.isMouseOver(window) && button.getText().getString() == "save") {//daca a fost dat click pe butonul save
+    if (button.isMouseOver(window) && button.getText().getString() == "save") { //daca a fost dat click pe butonul save
+        std::cout << "save button clicked\n";
         canvas.Export(window);
     }
-
     if (button.isMouseOver(window) && button.getText().getString() == "open") {
-
+        std::cout << "open button clicked\n";
+        background.loadFromFile(canvas.Import());
+        backgroundSprite.setTexture(background);
     }
-
-    if (button.isMouseOver(window) && button.getText().getString() == "new") {
-
+    if (button.isMouseOver(window) && button.getText().getString() == "clear") {
+        std::cout << "clear button clicked\n";
+        pixels.clear();//stergem tot ce e desenat cu mana
+        squares.clear();//stergem patratele
+        backgroundSprite.setColor(sf::Color::Transparent);//facem transparent background-ul (daca o poza a fost importata)
     }
 }
 
@@ -61,7 +67,6 @@ void OnClickShapeBtn(sf::RenderWindow& window, Button& btn, bool& drawShape) {
 int main()
 {
     sf::RenderWindow window(sf::VideoMode(1280, 720), "SPAINT!");//initialize the window
-    window.setFramerateLimit(60);
     sf::Font f;
 
     if (!f.loadFromFile("BalooTammudu2-Regular.ttf"))
@@ -69,6 +74,7 @@ int main()
 
     Button btnSave(sf::Vector2f(25,30), sf::Vector2f(150,70), sf::Color::Green, f, "save", sf::Color::White);
     Button btnOpen(sf::Vector2f(200, 30), sf::Vector2f(150, 70), sf::Color::Green, f, "open", sf::Color::White);
+
     Button btnNew(sf::Vector2f(375, 30), sf::Vector2f(150, 70), sf::Color::Green, f, "new", sf::Color::White);
     Button btnClear(sf::Vector2f(550, 30), sf::Vector2f(150, 70), sf::Color::Green, f, "clear", sf::Color::White);
 
@@ -91,15 +97,23 @@ int main()
                                             //care va vor fi desenati 
     std::vector <sf::RectangleShape> squareShapes;
 
+
     bool isMouseClicked = false; //stores if mouse is clicked now 
     bool drawASquare = false; //stores if the user want to draw a square on the screen 
 
     //sf::RectangleShape workSpace(sf::Vector2f(900,650));//900 650
     Canvas canvas(sf::Vector2f(900, 600), sf::Vector2f(25, 115),sf::Color::White);
 
+    Button btnclearbtnNew(sf::Vector2f(400, 30), sf::Vector2f(150, 70), sf::Color::Green, f, "new", sf::Color::White);
+
     //pixel dimension (for freestyle drawing)
     const int pixelDimension = 10;
-    
+
+    sf::Texture backgroundImage;
+    backgroundImage.create(875, 600);
+    sf::Sprite  background;
+    background.setPosition(25, 115);
+
     //main loop 
     while (window.isOpen())
     {
@@ -113,8 +127,9 @@ int main()
                     break;
                 case sf::Event::MouseButtonPressed: //if the user pressed any mouse button
                     if (event.mouseButton.button == sf::Mouse::Left) {//if the user pressed left click
-                        //MenuButtonOnClick(window, btnSave, btnOpen, btnNew);
-                        OnClickButton(window, btnSave, canvas);
+                        OnClickButton(window, btnSave, canvas, backgroundImage, background, pixels, squareShapes);//we need to check if the user pressed the save button
+                        OnClickButton(window, btnOpen, canvas, backgroundImage, background, pixels, squareShapes);//we need to check if the user pressed the open button
+                        OnClickButton(window, btnClear, canvas, backgroundImage, background, pixels, squareShapes);
                         OnClickColorBtn(window, greenCol, currentColor);
                         OnClickColorBtn(window, redCol, currentColor);
                         OnClickColorBtn(window, whiteCol, currentColor);
@@ -138,13 +153,10 @@ int main()
             }
         }
 
-        
-
         //LOGIC 
         if (isMouseClicked) {//if the mouse is still clicked theen set the 2 element of line (basicly dragging)
             sf::Vector2i mousePos = sf::Mouse::getPosition(window); //get mousePosition
             if (canvas.contains(mousePos)){//draw a pixel only if it is the canvas
-                
                 if (drawASquare) {//daca a dat user-ul sa deseneze un patrat 
                     std::cout << "afisam un patrat la pozitia" << mousePos.x << " " << mousePos.y << "\n";
                     int width, height;
@@ -162,12 +174,15 @@ int main()
                     pixels.push_back(sh2);
                 }
             }
-            std::cout << "Position of text : " << mousePos.x << " " << mousePos.y << std::endl;
+            //std::cout << "Position of text : " << mousePos.x << " " << mousePos.y << std::endl;
         }
         
         //partea de desenat
         window.clear();//facem clear la ecran (pt update)
         canvas.draw(window);
+
+        window.draw(background);
+
         btnSave.draw(window);
         btnOpen.draw(window);
         btnNew.draw(window);
@@ -183,6 +198,7 @@ int main()
             window.draw(line);
         for (auto square : squareShapes)
             window.draw(square);
+        
         window.display();//afisam tot pe ecran 
     }
 

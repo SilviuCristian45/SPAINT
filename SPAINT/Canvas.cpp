@@ -9,9 +9,12 @@ Canvas::Canvas(sf::Vector2f size, sf::Vector2f pos, sf::Color col)
 	workSpace.setFillColor(col);
 }
 
-void Canvas::Import(std::string path)
+std::string Canvas::Import()
 {
-	std::cout << "import in the canvas \n";
+    std::string path = openfile();
+    std::cout << path << "\n";
+    MessageBoxA(NULL, "Imagine importata cu succes!!", "Mesaj", MB_OKCANCEL | MB_ICONINFORMATION);
+    return path;
 }
 
 void Canvas::clear()
