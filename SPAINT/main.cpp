@@ -90,6 +90,7 @@ int main()
 
     Button squareButton(sf::Vector2f(1000, 500), sf::Vector2f(100, 50), sf::Color::Transparent, f, "", sf::Color::Magenta);
     Button circleButton(sf::Vector2f(1200, 500), sf::Vector2f(50, 50), sf::Color::Transparent, f, "Circle", sf::Color::Transparent);
+    Button triangleButton(sf::Vector2f(1000, 650), sf::Vector2f(100, 50), sf::Color::Transparent, f, "Triangle", sf::Color::Magenta);
 
     sf::Color currentColor = sf::Color::Black;
     sf::RectangleShape rec(sf::Vector2f(50,50));
@@ -100,11 +101,12 @@ int main()
                                             //care va vor fi desenati 
     std::vector <sf::RectangleShape> squareShapes;
     std::vector <sf::CircleShape> circleShapes;
+    std::vector <sf::CircleShape> triangles;
 
     bool isMouseClicked = false; //stores if mouse is clicked now 
     bool drawASquare = false; //stores if the user want to draw a square on the screen 
     bool drawAcircle = false; //stores if the user want to draw a circle on the screen 
-
+    bool drawAtriangle = false;
     //sf::RectangleShape workSpace(sf::Vector2f(900,650));//900 650
     Canvas canvas(sf::Vector2f(900, 600), sf::Vector2f(25, 115),sf::Color::White);
 
@@ -144,6 +146,7 @@ int main()
 
                         OnClickShapeBtn(window, squareButton, drawASquare);
                         OnClickShapeBtn(window, circleButton, drawAcircle);
+                        OnClickShapeBtn(window, triangleButton, drawAtriangle);
                         if (!isMouseClicked) { //if the mouse is not clicked yet (so no dragging) 
                             isMouseClicked = true; //the mouse was clicked 
                         }
@@ -177,14 +180,32 @@ int main()
                 }
                 else if (drawAcircle) {
                     std::cout << "afisam un cerc la pozitia" << mousePos.x << " " << mousePos.y << "\n";
-                    int radius;
+                    int radius, optionEllipse;
                     std::cout << "radius = "; std::cin >> radius;
+                    std::cout << "Sa fie elipsa ?  1- da ||| 0 - nu : "; std::cin >> optionEllipse;
 
                     sf::CircleShape circle(radius);
                     circle.setFillColor(currentColor);
                     circle.setPosition(sf::Vector2f(mousePos.x, mousePos.y));
+
+                    if (optionEllipse == 1) circle.setScale(2, 1);//in caz ca utilizatorul doreste sa fie elipsa
+
                     circleShapes.push_back(circle);
                     drawAcircle = false;
+                    isMouseClicked = false;
+                }
+                else if (drawAtriangle) {
+                    std::cout << "afisam un triunghi la pozitia" << mousePos.x << " " << mousePos.y << "\n";
+
+                    int latura;
+                    std::cout << "latura triunghi = "; std::cin >> latura;
+
+                    sf::CircleShape sh(latura);
+                    sh.setPointCount(3);
+                    sh.setPosition(sf::Vector2f(mousePos.x, mousePos.y));
+                    sh.setFillColor(currentColor);
+                    triangles.push_back(sh);
+                    drawAtriangle = false;
                     isMouseClicked = false;
                 }
                 else { //the user is drawing free hand if no specific shape is selected
@@ -216,12 +237,16 @@ int main()
         purpleCol.draw(window);
         squareButton.draw(window);
         circleButton.draw(window);
+        triangleButton.draw(window);
+
         for (auto line : pixels) //desenam toate liniile desenate pana acum (sau punctele doar)
             window.draw(line);
         for (auto square : squareShapes)
             window.draw(square);
         for (auto circle : circleShapes)
             window.draw(circle);
+        for (auto triangle : triangles)
+            window.draw(triangle);
         window.display();//afisam tot pe ecran 
     }
 
