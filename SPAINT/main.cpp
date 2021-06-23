@@ -9,7 +9,7 @@
 #include "Canvas.h"
 
 
-void OnClickButton(sf::RenderWindow& window, Button& button, Canvas& canvas, sf::Texture& background,sf::Sprite& backgroundSprite,std::vector<sf::CircleShape> &pixels,std::vector<sf::RectangleShape>& squares) {
+void OnClickButton(sf::RenderWindow& window, Button& button, Canvas& canvas, sf::Texture& background,sf::Sprite& backgroundSprite,std::vector<sf::CircleShape> &pixels,std::vector<sf::RectangleShape>& squares, std::vector<sf::CircleShape>& circleShapes, std::vector<sf::CircleShape>& triangleShapes) {
     /*FOR MENU BUTTONS */
     if (button.isMouseOver(window) && button.getText().getString() == "save") { //daca a fost dat click pe butonul save
         std::cout << "save button clicked\n";
@@ -24,6 +24,8 @@ void OnClickButton(sf::RenderWindow& window, Button& button, Canvas& canvas, sf:
         std::cout << "clear button clicked\n";
         pixels.clear();//stergem tot ce e desenat cu mana
         squares.clear();//stergem patratele
+        circleShapes.clear();//stergem cercurile
+        triangleShapes.clear();//stergem triunghiurile
         backgroundSprite.setColor(sf::Color::Transparent);//facem transparent background-ul (daca o poza a fost importata)
     }
 }
@@ -90,7 +92,7 @@ int main()
 
     Button squareButton(sf::Vector2f(1000, 500), sf::Vector2f(100, 50), sf::Color::Transparent, f, "", sf::Color::Magenta);
     Button circleButton(sf::Vector2f(1200, 500), sf::Vector2f(50, 50), sf::Color::Transparent, f, "Circle", sf::Color::Transparent);
-    Button triangleButton(sf::Vector2f(1000, 650), sf::Vector2f(100, 50), sf::Color::Transparent, f, "Triangle", sf::Color::Magenta);
+    Button triangleButton(sf::Vector2f(1000, 600), sf::Vector2f(100, 50), sf::Color::Transparent, f, "Triangle", sf::Color::Transparent);
 
     sf::Color currentColor = sf::Color::Black;
     sf::RectangleShape rec(sf::Vector2f(50,50));
@@ -133,9 +135,9 @@ int main()
                     break;
                 case sf::Event::MouseButtonPressed: //if the user pressed any mouse button
                     if (event.mouseButton.button == sf::Mouse::Left) {//if the user pressed left click
-                        OnClickButton(window, btnSave, canvas, backgroundImage, background, pixels, squareShapes);//we need to check if the user pressed the save button
-                        OnClickButton(window, btnOpen, canvas, backgroundImage, background, pixels, squareShapes);//we need to check if the user pressed the open button
-                        OnClickButton(window, btnClear, canvas, backgroundImage, background, pixels, squareShapes);
+                        OnClickButton(window, btnSave, canvas, backgroundImage, background, pixels, squareShapes, circleShapes, triangles);//we need to check if the user pressed the save button
+                        OnClickButton(window, btnOpen, canvas, backgroundImage, background, pixels, squareShapes, circleShapes, triangles);//we need to check if the user pressed the open button
+                        OnClickButton(window, btnClear, canvas, backgroundImage, background, pixels, squareShapes, circleShapes, triangles);
                         
                         OnClickColorBtn(window, greenCol, currentColor);
                         OnClickColorBtn(window, redCol, currentColor);
