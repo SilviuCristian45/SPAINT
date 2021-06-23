@@ -75,8 +75,8 @@ int main()
     Button btnSave(sf::Vector2f(25,30), sf::Vector2f(150,70), sf::Color::Green, f, "save", sf::Color::White);
     Button btnOpen(sf::Vector2f(200, 30), sf::Vector2f(150, 70), sf::Color::Green, f, "open", sf::Color::White);
 
-    Button btnNew(sf::Vector2f(375, 30), sf::Vector2f(150, 70), sf::Color::Green, f, "new", sf::Color::White);
-    Button btnClear(sf::Vector2f(550, 30), sf::Vector2f(150, 70), sf::Color::Green, f, "clear", sf::Color::White);
+    //Button btnNew(sf::Vector2f(375, 30), sf::Vector2f(150, 70), sf::Color::Green, f, "new", sf::Color::White);
+    Button btnClear(sf::Vector2f(375, 30), sf::Vector2f(150, 70), sf::Color::Green, f, "clear", sf::Color::White);
 
     sf::Vector2f btnColorSize(50, 50);
 
@@ -88,18 +88,22 @@ int main()
     Button greenCol(sf::Vector2f(1000, 337), btnColorSize, sf::Color::Green, f, "", sf::Color::Green);
     Button purpleCol(sf::Vector2f(1200, 337), btnColorSize, sf::Color::Magenta, f, "", sf::Color::Magenta);
 
-    Button squareButton(sf::Vector2f(1000, 500), btnColorSize, sf::Color::Transparent, f, "", sf::Color::Magenta);
+    Button squareButton(sf::Vector2f(1000, 500), sf::Vector2f(100, 50), sf::Color::Transparent, f, "", sf::Color::Magenta);
+    Button circleButton(sf::Vector2f(1200, 500), sf::Vector2f(50, 50), sf::Color::Transparent, f, "Circle", sf::Color::Transparent);
 
     sf::Color currentColor = sf::Color::Black;
-    sf::RectangleShape rec;
+    sf::RectangleShape rec(sf::Vector2f(50,50));
+    rec.setPosition(1100, 30);
+    rec.setOutlineColor(sf::Color::White); rec.setOutlineThickness(1);
 
     std::vector <sf::CircleShape> pixels;//definim array-ul care va stoca pixelii sub forma de cerculete 
                                             //care va vor fi desenati 
     std::vector <sf::RectangleShape> squareShapes;
-
+    std::vector <sf::CircleShape> circleShapes;
 
     bool isMouseClicked = false; //stores if mouse is clicked now 
     bool drawASquare = false; //stores if the user want to draw a square on the screen 
+    bool drawAcircle = false; //stores if the user want to draw a circle on the screen 
 
     //sf::RectangleShape workSpace(sf::Vector2f(900,650));//900 650
     Canvas canvas(sf::Vector2f(900, 600), sf::Vector2f(25, 115),sf::Color::White);
@@ -130,13 +134,16 @@ int main()
                         OnClickButton(window, btnSave, canvas, backgroundImage, background, pixels, squareShapes);//we need to check if the user pressed the save button
                         OnClickButton(window, btnOpen, canvas, backgroundImage, background, pixels, squareShapes);//we need to check if the user pressed the open button
                         OnClickButton(window, btnClear, canvas, backgroundImage, background, pixels, squareShapes);
+                        
                         OnClickColorBtn(window, greenCol, currentColor);
                         OnClickColorBtn(window, redCol, currentColor);
                         OnClickColorBtn(window, whiteCol, currentColor);
                         OnClickColorBtn(window, blackCol, currentColor);
                         OnClickColorBtn(window, purpleCol, currentColor);
                         OnClickColorBtn(window, blueCol, currentColor);
+
                         OnClickShapeBtn(window, squareButton, drawASquare);
+                        OnClickShapeBtn(window, circleButton, drawAcircle);
                         if (!isMouseClicked) { //if the mouse is not clicked yet (so no dragging) 
                             isMouseClicked = true; //the mouse was clicked 
                         }
@@ -166,6 +173,19 @@ int main()
                     sh.setPosition(sf::Vector2f(mousePos.x, mousePos.y));
                     squareShapes.push_back(sh);
                     drawASquare = false;
+                    isMouseClicked = false;//pt un bug dinasta care activa mouse-ul dupa ce se desena patratul 
+                }
+                else if (drawAcircle) {
+                    std::cout << "afisam un cerc la pozitia" << mousePos.x << " " << mousePos.y << "\n";
+                    int radius;
+                    std::cout << "radius = "; std::cin >> radius;
+
+                    sf::CircleShape circle(radius);
+                    circle.setFillColor(currentColor);
+                    circle.setPosition(sf::Vector2f(mousePos.x, mousePos.y));
+                    circleShapes.push_back(circle);
+                    drawAcircle = false;
+                    isMouseClicked = false;
                 }
                 else { //the user is drawing free hand if no specific shape is selected
                     sf::CircleShape sh2(10);
@@ -177,15 +197,16 @@ int main()
             //std::cout << "Position of text : " << mousePos.x << " " << mousePos.y << std::endl;
         }
         
+        rec.setFillColor(currentColor);
+
         //partea de desenat
         window.clear();//facem clear la ecran (pt update)
         canvas.draw(window);
 
         window.draw(background);
-
+        window.draw(rec);
         btnSave.draw(window);
         btnOpen.draw(window);
-        btnNew.draw(window);
         btnClear.draw(window);
         whiteCol.draw(window);
         redCol.draw(window);
@@ -194,11 +215,13 @@ int main()
         blackCol.draw(window);
         purpleCol.draw(window);
         squareButton.draw(window);
+        circleButton.draw(window);
         for (auto line : pixels) //desenam toate liniile desenate pana acum (sau punctele doar)
             window.draw(line);
         for (auto square : squareShapes)
             window.draw(square);
-        
+        for (auto circle : circleShapes)
+            window.draw(circle);
         window.display();//afisam tot pe ecran 
     }
 

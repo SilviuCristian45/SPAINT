@@ -63,7 +63,7 @@ bool Canvas::contains(sf::Vector2i point)
     sf::Vector2f workSpacePostion = workSpace.getPosition();
     sf::Vector2f workSpaceSize = workSpace.getSize();
 
-    return (point.x >= workSpacePostion.x && point.x <= workSpacePostion.x + workSpaceSize.x
-            && point.y >= workSpacePostion.y && point.y <= workSpacePostion.y + workSpaceSize.y);
+    return (point.x > workSpacePostion.x && point.x < workSpacePostion.x + workSpaceSize.x
+            && point.y > workSpacePostion.y && point.y < workSpacePostion.y + workSpaceSize.y);
 }
 
