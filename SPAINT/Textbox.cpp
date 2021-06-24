@@ -28,12 +28,16 @@ void Textbox::checkIfSelected(sf::RenderWindow& window)
 	std::cout << selected << "\n";
 	selected = (point.x > workSpacePostion.x && point.x < workSpacePostion.x + workSpaceSize.x
 		&& point.y > workSpacePostion.y && point.y < workSpacePostion.y + workSpaceSize.y);
-	if (selected)
-		text.setString(text.getString() + "_");
+	if (selected) //daca user-ul a selectat textbox-ul
+		text.setString(text.getString() + "_"); //adaugam la final un _ pt a fi mai vizibil faptul ca e textbox-ul selectat
 	else {
+		//stergem _ din string pentru a marca faptul ca nu mai e selectat textbox-ul
 		std::string newString = text.getString();
-		if (*newString.end() == '_')
-			newString.pop_back();
+		int tt = newString.find("_");//stocam pozitia underscore-ului
+		if(tt != -1){
+			newString.erase(tt);//stergem underscore-ul
+			text.setString(newString);
+		}
 	}
 }
 

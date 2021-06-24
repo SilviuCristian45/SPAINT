@@ -19,6 +19,7 @@ void OnClickButton(sf::RenderWindow& window, Button& button, Canvas& canvas, sf:
         std::cout << "open button clicked\n";
         background.loadFromFile(canvas.Import());
         backgroundSprite.setTexture(background);
+        backgroundSprite.setColor(sf::Color(255,255,255,255));
     }
     if (button.isMouseOver(window) && button.getText().getString() == "clear") {
         std::cout << "clear button clicked\n";
@@ -166,24 +167,23 @@ int main()
                     //std::cout << "release la mouse click stanga";
                     break;
                 case sf::Event::TextEntered:
-                    if(event.text.unicode < 128 && sizeTextBox.getSelected()) {
-                        if (event.text.unicode == 8) {
+                    
+                    if(event.text.unicode < 128 && sizeTextBox.getSelected()) {//daca a apasat user-ul pe un caracter si daca e textbox-ul selectat
+                        if (event.text.unicode == 8) {//daca a apasat backspace
                             std::cout << "backspace" << std::endl;
-                            std::string newString = sizeTextBox.getText().getString();
-                            if (newString.size() > 0) {
-                                std::cout << newString << std::endl;
-                                newString.pop_back();
-                                newString.pop_back();
-                                newString += "_";
-                                std::cout << newString << std::endl;
-                                sizeTextBox.setText(newString);
+                            std::string newString = sizeTextBox.getText().getString(); //preluam ce avem in texbox
+                            if (newString.size() > 0) { //daca e ceva in textbox
+                                newString.pop_back(); //stergem _ de la final 
+                                newString.pop_back(); // stergem ultima cifra
+                                newString += "_"; //adaugam la final _ ca sa fie efectul de selectie vizibil 
+                                sizeTextBox.setText(newString);//actualizam string-ul pe ecran 
                             }
                         }
-                        else {
-                            char c = static_cast<char>(event.text.unicode);
-                            std::string newString = sizeTextBox.getText().getString();
-                            newString.pop_back();
-                            sizeTextBox.setText(newString + c + '_');
+                        else { //daca a introdus un caracter altul decat backspace 
+                            char c = static_cast<char>(event.text.unicode); //stocam caracterul corespunzator tastei (convertim codul ascii in char)
+                            std::string newString = sizeTextBox.getText().getString(); //preluam ce avem in textbox 
+                            newString.pop_back(); //stergem _ de la finalul din texbox
+                            sizeTextBox.setText(newString + c + '_'); //adaugam la final caracterul introddus + _ pt efectul de selectie  
                         }
                         //std::cout << c << std::endl;
                     }
@@ -239,10 +239,10 @@ int main()
                     isMouseClicked = false;
                 }
                 else { //the user is drawing free hand if no specific shape is selected
-                    std::string p = sizeTextBox.getText().getString(); p.pop_back();
-                    lineSize = std::atoi(p.c_str());
+                    std::string p = sizeTextBox.getText().getString();//preluam valoarea scrisa in textbox 
+                    lineSize = std::atoi(p.c_str());//convertim in int 
 
-                    sf::CircleShape sh2(lineSize);
+                    sf::CircleShape sh2(lineSize); //la raza pixelului setam valoarea din texbox
                     sh2.setPosition(sf::Vector2f(mousePos.x, mousePos.y));
                     sh2.setFillColor(currentColor);
                     pixels.push_back(sh2);
