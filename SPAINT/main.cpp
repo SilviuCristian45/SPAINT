@@ -7,7 +7,7 @@
 
 #include "Button.h"
 #include "Canvas.h"
-
+#include "Textbox.h"
 
 void OnClickButton(sf::RenderWindow& window, Button& button, Canvas& canvas, sf::Texture& background,sf::Sprite& backgroundSprite,std::vector<sf::CircleShape> &pixels,std::vector<sf::RectangleShape>& squares, std::vector<sf::CircleShape>& circleShapes, std::vector<sf::CircleShape>& triangleShapes) {
     /*FOR MENU BUTTONS */
@@ -96,7 +96,7 @@ int main()
 
     sf::Color currentColor = sf::Color::Black;
     sf::RectangleShape rec(sf::Vector2f(50,50));
-    rec.setPosition(1100, 30);
+    rec.setPosition(1200, 30);
     rec.setOutlineColor(sf::Color::White); rec.setOutlineThickness(1);
 
     std::vector <sf::CircleShape> pixels;//definim array-ul care va stoca pixelii sub forma de cerculete 
@@ -121,6 +121,9 @@ int main()
     backgroundImage.create(875, 600);
     sf::Sprite  background;
     background.setPosition(25, 115);
+
+    Textbox sizeTextBox(sf::Vector2f(1125,40),sf::Vector2f(200,40), "10", f);
+    int lineSize = 10;
 
     //main loop 
     while (window.isOpen())
@@ -149,6 +152,8 @@ int main()
                         OnClickShapeBtn(window, squareButton, drawASquare);
                         OnClickShapeBtn(window, circleButton, drawAcircle);
                         OnClickShapeBtn(window, triangleButton, drawAtriangle);
+
+                        sizeTextBox.checkIfSelected(window);
                         if (!isMouseClicked) { //if the mouse is not clicked yet (so no dragging) 
                             isMouseClicked = true; //the mouse was clicked 
                         }
@@ -159,6 +164,29 @@ int main()
                         isMouseClicked = false; //mouse left is no longer pressed 
                     }
                     //std::cout << "release la mouse click stanga";
+                    break;
+                case sf::Event::TextEntered:
+                    if(event.text.unicode < 128 && sizeTextBox.getSelected()) {
+                        if (event.text.unicode == 8) {
+                            std::cout << "backspace" << std::endl;
+                            std::string newString = sizeTextBox.getText().getString();
+                            if (newString.size() > 0) {
+                                std::cout << newString << std::endl;
+                                newString.pop_back();
+                                newString.pop_back();
+                                newString += "_";
+                                std::cout << newString << std::endl;
+                                sizeTextBox.setText(newString);
+                            }
+                        }
+                        else {
+                            char c = static_cast<char>(event.text.unicode);
+                            std::string newString = sizeTextBox.getText().getString();
+                            newString.pop_back();
+                            sizeTextBox.setText(newString + c + '_');
+                        }
+                        //std::cout << c << std::endl;
+                    }
                     break;
                 default:
                     break;
@@ -211,7 +239,10 @@ int main()
                     isMouseClicked = false;
                 }
                 else { //the user is drawing free hand if no specific shape is selected
-                    sf::CircleShape sh2(10);
+                    std::string p = sizeTextBox.getText().getString(); p.pop_back();
+                    lineSize = std::atoi(p.c_str());
+
+                    sf::CircleShape sh2(lineSize);
                     sh2.setPosition(sf::Vector2f(mousePos.x, mousePos.y));
                     sh2.setFillColor(currentColor);
                     pixels.push_back(sh2);
@@ -219,6 +250,7 @@ int main()
             }
             //std::cout << "Position of text : " << mousePos.x << " " << mousePos.y << std::endl;
         }
+        
         
         rec.setFillColor(currentColor);
 
@@ -228,6 +260,9 @@ int main()
 
         window.draw(background);
         window.draw(rec);
+
+        sizeTextBox.draw(window);
+
         btnSave.draw(window);
         btnOpen.draw(window);
         btnClear.draw(window);
