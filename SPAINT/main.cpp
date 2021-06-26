@@ -9,7 +9,7 @@
 #include "Canvas.h"
 #include "Textbox.h"
 
-void OnClickButton(sf::RenderWindow& window, Button& button, Canvas& canvas, sf::Texture& background,sf::Sprite& backgroundSprite,std::vector<sf::CircleShape> &pixels,std::vector<sf::RectangleShape>& squares, std::vector<sf::CircleShape>& circleShapes, std::vector<sf::CircleShape>& triangleShapes) {
+void OnClickButton(sf::RenderWindow& window, Button& button, Canvas& canvas, sf::Texture& background,sf::Sprite& backgroundSprite,std::vector<sf::CircleShape> &pixels,std::vector<sf::RectangleShape>& squares, std::vector<sf::CircleShape>& circleShapes, std::vector<sf::CircleShape>& triangleShapes, std::vector<sf::VertexArray>& lines) {
     /*FOR MENU BUTTONS */
     if (button.isMouseOver(window) && button.getText().getString() == "save") { //daca a fost dat click pe butonul save
         std::cout << "save button clicked\n";
@@ -28,6 +28,7 @@ void OnClickButton(sf::RenderWindow& window, Button& button, Canvas& canvas, sf:
         circleShapes.clear();//stergem cercurile
         triangleShapes.clear();//stergem triunghiurile
         backgroundSprite.setColor(sf::Color::Transparent);//facem transparent background-ul (daca o poza a fost importata)
+        lines.clear();
     }
 }
 
@@ -143,9 +144,9 @@ int main()
                     break;
                 case sf::Event::MouseButtonPressed: //if the user pressed any mouse button
                     if (event.mouseButton.button == sf::Mouse::Left) {//if the user pressed left click
-                        OnClickButton(window, btnSave, canvas, backgroundImage, background, pixels, squareShapes, circleShapes, triangles);//we need to check if the user pressed the save button
-                        OnClickButton(window, btnOpen, canvas, backgroundImage, background, pixels, squareShapes, circleShapes, triangles);//we need to check if the user pressed the open button
-                        OnClickButton(window, btnClear, canvas, backgroundImage, background, pixels, squareShapes, circleShapes, triangles);
+                        OnClickButton(window, btnSave, canvas, backgroundImage, background, pixels, squareShapes, circleShapes, triangles, lines);//we need to check if the user pressed the save button
+                        OnClickButton(window, btnOpen, canvas, backgroundImage, background, pixels, squareShapes, circleShapes, triangles, lines);//we need to check if the user pressed the open button
+                        OnClickButton(window, btnClear, canvas, backgroundImage, background, pixels, squareShapes, circleShapes, triangles, lines);
                         
                         OnClickColorBtn(window, greenCol, currentColor);
                         OnClickColorBtn(window, redCol, currentColor);
@@ -245,15 +246,21 @@ int main()
                 }
                 else if (drawALine) {
                     std::cout << "afisam o linie la pozitia" << mousePos.x << " " << mousePos.y << "\n";
-                    sf::VertexArray newLine(sf::LinesStrip);//o linie plina formata din 2 capete (2 vertexi )
+                    if (lines.size() == 0 || lines[lines.size() - 1].getVertexCount() == 2) {
+                        sf::VertexArray newLine(sf::LinesStrip);//o linie plina formata din 2 capete (2 vertexi )
+                        newLine.append(sf::Vertex(sf::Vector2f(mousePos.x, mousePos.y), currentColor));//primul capat al liniei 
+                        lines.push_back(newLine);// adaugam la 
+                        std::cout << "primul punct\n";
+                        isMouseClicked = false; //mouse-ul nu mai e apasat la punctul acesta 
+                    }
+                    else {
+                        if (lines[lines.size() - 1].getVertexCount() == 1) {//daca e inserat primul vertex in ultima linie desenata
+                            lines[lines.size() - 1].append(sf::Vertex(sf::Vector2f(mousePos.x, mousePos.y), currentColor));//al doilea capat al liniei 
+                            //drawALine = false; //e terminata linia de desenat, deci nu mai desenam
+                            std::cout << "al doilea punct\n";
+                        }
+                    }
                     
-                    newLine.append(sf::Vertex(sf::Vector2f(mousePos.x, mousePos.y), currentColor));//primul capat al liniei 
-                    newLine.append(sf::Vertex(sf::Vector2f(mousePos.x + 100, mousePos.y), currentColor));//al doilea capat al liniei 
-                    
-                    lines.push_back(newLine);// adaugam la 
-
-                    drawALine = false; //s-a terminat de desenat linia 
-                    isMouseClicked = false; //nu mai e apasat click stanga
                 }
                 else {//the user is drawing free hand if no specific shape is selected
                     std::string p = sizeTextBox.getText().getString();//preluam valoarea scrisa in textbox 
@@ -283,6 +290,7 @@ int main()
         btnSave.draw(window);
         btnOpen.draw(window);
         btnClear.draw(window);
+
         whiteCol.draw(window);
         redCol.draw(window);
         blueCol.draw(window);
