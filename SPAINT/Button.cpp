@@ -55,7 +55,7 @@ void Button::setColor(sf::Color col)
 //metoda pt desenarea pe ecran a butonului 
 void Button::draw(sf::RenderWindow &screen)
 {
-	if (_text.getString() == "Circle"){//daca e cumva un  buton sub forma de cerc
+	if (_text.getString() == "Circle") {//daca e cumva un  buton sub forma de cerc
 		sf::CircleShape sh(25);
 		sh.setPosition(_buttonRect.getPosition());
 		sh.setFillColor(sf::Color::Transparent);
@@ -72,7 +72,17 @@ void Button::draw(sf::RenderWindow &screen)
 		sh.setOutlineThickness(1);
 		screen.draw(sh);
 	}
-	else
+	else if (_text.getString() == "Line") {
+		sf::RectangleShape sh;
+		sh.setSize(sf::Vector2f(100,3));
+		sh.setPosition(_buttonRect.getPosition());
+		sh.setFillColor(sf::Color::Transparent);
+		sh.setOutlineColor(sf::Color::White);
+		sh.setOutlineThickness(1);
+		sh.setRotation(45);
+		screen.draw(sh);
+	}
+	else 
 		screen.draw(_buttonRect);
 	screen.draw(_text);
 }

@@ -94,6 +94,7 @@ int main()
     Button squareButton(sf::Vector2f(1000, 500), sf::Vector2f(100, 50), sf::Color::Transparent, f, "", sf::Color::Magenta);
     Button circleButton(sf::Vector2f(1200, 500), sf::Vector2f(50, 50), sf::Color::Transparent, f, "Circle", sf::Color::Transparent);
     Button triangleButton(sf::Vector2f(1000, 600), sf::Vector2f(100, 50), sf::Color::Transparent, f, "Triangle", sf::Color::Transparent);
+    Button lineButton(sf::Vector2f(1200, 600), sf::Vector2f(100, 50), sf::Color::Transparent, f, "Line", sf::Color::Transparent);
 
     sf::Color currentColor = sf::Color::Black;
     sf::RectangleShape rec(sf::Vector2f(50,50));
@@ -105,11 +106,14 @@ int main()
     std::vector <sf::RectangleShape> squareShapes;
     std::vector <sf::CircleShape> circleShapes;
     std::vector <sf::CircleShape> triangles;
+    std::vector <sf::VertexArray> lines;
 
     bool isMouseClicked = false; //stores if mouse is clicked now 
     bool drawASquare = false; //stores if the user want to draw a square on the screen 
     bool drawAcircle = false; //stores if the user want to draw a circle on the screen 
     bool drawAtriangle = false;
+    bool drawALine = false;
+
     //sf::RectangleShape workSpace(sf::Vector2f(900,650));//900 650
     Canvas canvas(sf::Vector2f(900, 600), sf::Vector2f(25, 115),sf::Color::White);
 
@@ -153,6 +157,7 @@ int main()
                         OnClickShapeBtn(window, squareButton, drawASquare);
                         OnClickShapeBtn(window, circleButton, drawAcircle);
                         OnClickShapeBtn(window, triangleButton, drawAtriangle);
+                        OnClickShapeBtn(window, lineButton, drawALine);
 
                         sizeTextBox.checkIfSelected(window);
                         if (!isMouseClicked) { //if the mouse is not clicked yet (so no dragging) 
@@ -238,19 +243,31 @@ int main()
                     drawAtriangle = false;
                     isMouseClicked = false;
                 }
-                else { //the user is drawing free hand if no specific shape is selected
+                else if (drawALine) {
+                    std::cout << "afisam o linie la pozitia" << mousePos.x << " " << mousePos.y << "\n";
+                    sf::VertexArray newLine(sf::LinesStrip);//o linie plina formata din 2 capete (2 vertexi )
+                    
+                    newLine.append(sf::Vertex(sf::Vector2f(mousePos.x, mousePos.y), currentColor));//primul capat al liniei 
+                    newLine.append(sf::Vertex(sf::Vector2f(mousePos.x + 100, mousePos.y), currentColor));//al doilea capat al liniei 
+                    
+                    lines.push_back(newLine);// adaugam la 
+
+                    drawALine = false; //s-a terminat de desenat linia 
+                    isMouseClicked = false; //nu mai e apasat click stanga
+                }
+                else {//the user is drawing free hand if no specific shape is selected
                     std::string p = sizeTextBox.getText().getString();//preluam valoarea scrisa in textbox 
                     lineSize = std::atoi(p.c_str());//convertim in int 
 
                     sf::CircleShape sh2(lineSize); //la raza pixelului setam valoarea din texbox
                     sh2.setPosition(sf::Vector2f(mousePos.x, mousePos.y));
                     sh2.setFillColor(currentColor);
+                    
                     pixels.push_back(sh2);
                 }
             }
             //std::cout << "Position of text : " << mousePos.x << " " << mousePos.y << std::endl;
         }
-        
         
         rec.setFillColor(currentColor);
 
@@ -275,6 +292,7 @@ int main()
         squareButton.draw(window);
         circleButton.draw(window);
         triangleButton.draw(window);
+        lineButton.draw(window);
 
         for (auto line : pixels) //desenam toate liniile desenate pana acum (sau punctele doar)
             window.draw(line);
@@ -284,6 +302,8 @@ int main()
             window.draw(circle);
         for (auto triangle : triangles)
             window.draw(triangle);
+        for (auto line : lines)
+            window.draw(line);
         window.display();//afisam tot pe ecran 
     }
 
