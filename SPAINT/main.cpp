@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <stack>
 #include <Windows.h>
 
 #include "Button.h"
@@ -68,6 +69,11 @@ void OnClickShapeBtn(sf::RenderWindow& window, Button& btn, bool& drawShape) {
     }
 }
 
+void OnClickEraserBtn(sf::RenderWindow& window, Button& btn, bool& eraserEnabled) {
+    if (btn.isMouseOver(window))
+        eraserEnabled = !eraserEnabled;
+}
+
 int main()
 {
     sf::RenderWindow window(sf::VideoMode(1280, 720), "SPAINT!");//initialize the window
@@ -96,6 +102,7 @@ int main()
     Button circleButton(sf::Vector2f(1200, 500), sf::Vector2f(50, 50), sf::Color::Transparent, f, "Circle", sf::Color::Transparent);
     Button triangleButton(sf::Vector2f(1000, 600), sf::Vector2f(100, 50), sf::Color::Transparent, f, "Triangle", sf::Color::Transparent);
     Button lineButton(sf::Vector2f(1200, 600), sf::Vector2f(100, 50), sf::Color::Transparent, f, "Line", sf::Color::Transparent);
+    Button eraserButton(sf::Vector2f(1000, 35), btnColorSize, sf::Color::White, f, "", sf::Color::Transparent);
 
     sf::Color currentColor = sf::Color::Black;
     sf::RectangleShape rec(sf::Vector2f(50,50));
@@ -108,12 +115,16 @@ int main()
     std::vector <sf::CircleShape> circleShapes;
     std::vector <sf::CircleShape> triangles;
     std::vector <sf::VertexArray> lines;
+    std::vector <sf::CircleShape> erasedPixels;
+
+    //std::stack <sf::
 
     bool isMouseClicked = false; //stores if mouse is clicked now 
     bool drawASquare = false; //stores if the user want to draw a square on the screen 
     bool drawAcircle = false; //stores if the user want to draw a circle on the screen 
     bool drawAtriangle = false;
     bool drawALine = false;
+    bool eraserEnabled = false;
 
     //sf::RectangleShape workSpace(sf::Vector2f(900,650));//900 650
     Canvas canvas(sf::Vector2f(900, 600), sf::Vector2f(25, 115),sf::Color::White);
@@ -129,7 +140,7 @@ int main()
     background.setPosition(25, 115);
 
     Textbox sizeTextBox(sf::Vector2f(1125,40),sf::Vector2f(200,40), "10", f);
-    int lineSize = 10;
+    int lineSize = 10, ok = 0;
 
     //main loop 
     while (window.isOpen())
@@ -141,6 +152,11 @@ int main()
             {
                 case sf::Event::Closed: // if the user pressed X in order to exit the program
                     window.close();
+                    break;
+                case sf::Event::MouseButtonReleased:
+                    if (event.key.code == sf::Mouse::Left) {//if it was released from left click 
+                        isMouseClicked = false; //mouse left is no longer pressed 
+                    }
                     break;
                 case sf::Event::MouseButtonPressed: //if the user pressed any mouse button
                     if (event.mouseButton.button == sf::Mouse::Left) {//if the user pressed left click
@@ -154,11 +170,12 @@ int main()
                         OnClickColorBtn(window, blackCol, currentColor);
                         OnClickColorBtn(window, purpleCol, currentColor);
                         OnClickColorBtn(window, blueCol, currentColor);
-
+                        
                         OnClickShapeBtn(window, squareButton, drawASquare);
                         OnClickShapeBtn(window, circleButton, drawAcircle);
                         OnClickShapeBtn(window, triangleButton, drawAtriangle);
                         OnClickShapeBtn(window, lineButton, drawALine);
+                        OnClickEraserBtn(window, eraserButton, eraserEnabled);
 
                         sizeTextBox.checkIfSelected(window);
                         if (!isMouseClicked) { //if the mouse is not clicked yet (so no dragging) 
@@ -166,14 +183,8 @@ int main()
                         }
                     }
                     break;
-                case sf::Event::MouseButtonReleased:
-                    if (event.key.code == sf::Mouse::Left) {//if it was released from left click 
-                        isMouseClicked = false; //mouse left is no longer pressed 
-                    }
-                    //std::cout << "release la mouse click stanga";
-                    break;
+                
                 case sf::Event::TextEntered:
-                    
                     if(event.text.unicode < 128 && sizeTextBox.getSelected()) {//daca a apasat user-ul pe un caracter si daca e textbox-ul selectat
                         if (event.text.unicode == 8) {//daca a apasat backspace
                             std::cout << "backspace" << std::endl;
@@ -191,7 +202,6 @@ int main()
                             newString.pop_back(); //stergem _ de la finalul din texbox
                             sizeTextBox.setText(newString + c + '_'); //adaugam la final caracterul introddus + _ pt efectul de selectie  
                         }
-                        //std::cout << c << std::endl;
                     }
                     break;
                 default:
@@ -202,7 +212,7 @@ int main()
         //LOGIC 
         if (isMouseClicked) {//if the mouse is still clicked theen set the 2 element of line (basicly dragging)
             sf::Vector2i mousePos = sf::Mouse::getPosition(window); //get mousePosition
-            if (canvas.contains(mousePos)){//draw a pixel only if it is the canvas
+            if (canvas.contains(mousePos)) {//draw a pixel only if it is the canvas
                 if (drawASquare) {//daca a dat user-ul sa deseneze un patrat 
                     std::cout << "afisam un patrat la pozitia" << mousePos.x << " " << mousePos.y << "\n";
                     int width, height;
@@ -256,26 +266,36 @@ int main()
                     else {
                         if (lines[lines.size() - 1].getVertexCount() == 1) {//daca e inserat primul vertex in ultima linie desenata
                             lines[lines.size() - 1].append(sf::Vertex(sf::Vector2f(mousePos.x, mousePos.y), currentColor));//al doilea capat al liniei 
-                            //drawALine = false; //e terminata linia de desenat, deci nu mai desenam
+                            drawALine = false; //e terminata linia de desenat, deci nu mai desenam
                             std::cout << "al doilea punct\n";
                         }
                     }
-                    
+                }
+                else if (eraserEnabled) {
+                    std::string p = sizeTextBox.getText().getString();//preluam valoarea scrisa in textbox 
+                    lineSize = std::atoi(p.c_str());//convertim in int 
+
+                    sf::CircleShape sh2(lineSize); //la raza pixelului setam valoarea din texbox
+                    sh2.setPosition(sf::Vector2f(mousePos.x, mousePos.y));
+                    sh2.setFillColor(sf::Color::White); //setam pe white culoarea 
+
+                    erasedPixels.push_back(sh2);
                 }
                 else {//the user is drawing free hand if no specific shape is selected
+
                     std::string p = sizeTextBox.getText().getString();//preluam valoarea scrisa in textbox 
                     lineSize = std::atoi(p.c_str());//convertim in int 
 
                     sf::CircleShape sh2(lineSize); //la raza pixelului setam valoarea din texbox
                     sh2.setPosition(sf::Vector2f(mousePos.x, mousePos.y));
                     sh2.setFillColor(currentColor);
-                    
+
                     pixels.push_back(sh2);
                 }
             }
             //std::cout << "Position of text : " << mousePos.x << " " << mousePos.y << std::endl;
         }
-        
+
         rec.setFillColor(currentColor);
 
         //partea de desenat
@@ -292,6 +312,7 @@ int main()
         btnClear.draw(window);
 
         whiteCol.draw(window);
+        eraserButton.draw(window);
         redCol.draw(window);
         blueCol.draw(window);
         greenCol.draw(window);
@@ -312,6 +333,8 @@ int main()
             window.draw(triangle);
         for (auto line : lines)
             window.draw(line);
+        for (auto erasedPixel : erasedPixels)
+            window.draw(erasedPixel);
         window.display();//afisam tot pe ecran 
     }
 
