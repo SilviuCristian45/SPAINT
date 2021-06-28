@@ -51,3 +51,4 @@ std::string openfile(const wchar_t* filter = L"All Files (*.*)\0*.*\0", HWND own
     }
     return "inchis";
 }
+

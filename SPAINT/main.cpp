@@ -3,12 +3,12 @@
 
 #include <vector>
 #include <string>
-#include <stack>
 #include <Windows.h>
 
 #include "Button.h"
 #include "Canvas.h"
 #include "Textbox.h"
+#include <stack>
 
 void OnClickButton(sf::RenderWindow& window, Button& button, Canvas& canvas, sf::Texture& background,sf::Sprite& backgroundSprite,std::vector<sf::CircleShape> &pixels,std::vector<sf::RectangleShape>& squares, std::vector<sf::CircleShape>& circleShapes, std::vector<sf::CircleShape>& triangleShapes, std::vector<sf::VertexArray>& lines) {
     /*FOR MENU BUTTONS */
@@ -74,6 +74,22 @@ void OnClickEraserBtn(sf::RenderWindow& window, Button& btn, bool& eraserEnabled
         eraserEnabled = !eraserEnabled;
 }
 
+double Distance(sf::Vector2f A, sf::Vector2f B) // returns distance between two points
+{
+    return sqrt((B.y - A.y) * (B.y - A.y) + (B.x - A.x) * (B.x - A.x));
+}
+
+void DeleteWithEraser(sf::RenderWindow& window, std::vector<sf::CircleShape>& pixels, std::vector<sf::RectangleShape>& squares, std::vector<sf::CircleShape>& circleShapes, std::vector<sf::CircleShape>& triangleShapes, std::vector<sf::VertexArray>& lines) {
+    sf::Vector2i mousePos = sf::Mouse::getPosition(window); //luam pozitia mouse-ului de pe window
+    double radiusPoint = pixels[0].getRadius(); //luam raza primului punct 
+
+    for (int i = 0; i < pixels.size(); i++) { //parcurgem toate punctele desenate pana acum 
+        sf::Vector2f pixelPos = pixels[i].getPosition();//stocam pozitia punctului curent
+        if (Distance(pixelPos,sf::Vector2f(mousePos.x,mousePos.y)) <= radiusPoint) { //daca radiera(cursorul) intersecteaza punctul
+            pixels.erase(pixels.begin() + i);//stergem punctul 
+        }
+    }
+}
 int main()
 {
     sf::RenderWindow window(sf::VideoMode(1280, 720), "SPAINT!");//initialize the window
@@ -117,8 +133,6 @@ int main()
     std::vector <sf::VertexArray> lines;
     std::vector <sf::CircleShape> erasedPixels;
 
-    //std::stack <sf::
-
     bool isMouseClicked = false; //stores if mouse is clicked now 
     bool drawASquare = false; //stores if the user want to draw a square on the screen 
     bool drawAcircle = false; //stores if the user want to draw a circle on the screen 
@@ -140,7 +154,7 @@ int main()
     background.setPosition(25, 115);
 
     Textbox sizeTextBox(sf::Vector2f(1125,40),sf::Vector2f(200,40), "10", f);
-    int lineSize = 10, ok = 0;
+    int lineSize = 10;
 
     //main loop 
     while (window.isOpen())
@@ -220,6 +234,7 @@ int main()
                     sf::RectangleShape sh(sf::Vector2f(width, height));
                     sh.setFillColor(currentColor);
                     sh.setPosition(sf::Vector2f(mousePos.x, mousePos.y));
+                    
                     squareShapes.push_back(sh);
                     drawASquare = false;
                     isMouseClicked = false;//pt un bug dinasta care activa mouse-ul dupa ce se desena patratul 
@@ -250,6 +265,7 @@ int main()
                     sh.setPointCount(3);
                     sh.setPosition(sf::Vector2f(mousePos.x, mousePos.y));
                     sh.setFillColor(currentColor);
+
                     triangles.push_back(sh);
                     drawAtriangle = false;
                     isMouseClicked = false;
@@ -272,14 +288,16 @@ int main()
                     }
                 }
                 else if (eraserEnabled) {
-                    std::string p = sizeTextBox.getText().getString();//preluam valoarea scrisa in textbox 
-                    lineSize = std::atoi(p.c_str());//convertim in int 
+                    //std::string p = sizeTextBox.getText().getString();//preluam valoarea scrisa in textbox 
+                    //lineSize = std::atoi(p.c_str());//convertim in int 
 
-                    sf::CircleShape sh2(lineSize); //la raza pixelului setam valoarea din texbox
-                    sh2.setPosition(sf::Vector2f(mousePos.x, mousePos.y));
-                    sh2.setFillColor(sf::Color::White); //setam pe white culoarea 
+                    //sf::CircleShape sh2(lineSize); //la raza pixelului setam valoarea din texbox
+                    //sh2.setPosition(sf::Vector2f(mousePos.x, mousePos.y));
+                    //sh2.setFillColor(sf::Color::White); //setam pe white culoarea 
 
-                    erasedPixels.push_back(sh2);
+                    //erasedPixels.push_back(sh2);
+                    std::cout << "eraser enabled\n";
+                    DeleteWithEraser(window, pixels, squareShapes, circleShapes, triangles, lines);
                 }
                 else {//the user is drawing free hand if no specific shape is selected
 
@@ -335,6 +353,7 @@ int main()
             window.draw(line);
         for (auto erasedPixel : erasedPixels)
             window.draw(erasedPixel);
+
         window.display();//afisam tot pe ecran 
     }
 
