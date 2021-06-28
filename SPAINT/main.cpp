@@ -79,17 +79,74 @@ double Distance(sf::Vector2f A, sf::Vector2f B) // returns distance between two 
     return sqrt((B.y - A.y) * (B.y - A.y) + (B.x - A.x) * (B.x - A.x));
 }
 
+//function that returns the area of a Triangle defined by these points A(x1,y1) B(x2,y2) C(x3,y3)
+long double AreaTriangle(int x1, int y1, int x2, int y2, int x3, int y3)
+{
+    return abs((x1 * static_cast<long double>(y2 - y3) + x2 * static_cast<long double>(y3 - y1) + x3 * static_cast<long double>(y1 - y2)) / 2.0);
+}
+
 void DeleteWithEraser(sf::RenderWindow& window, std::vector<sf::CircleShape>& pixels, std::vector<sf::RectangleShape>& squares, std::vector<sf::CircleShape>& circleShapes, std::vector<sf::CircleShape>& triangleShapes, std::vector<sf::VertexArray>& lines) {
     sf::Vector2i mousePos = sf::Mouse::getPosition(window); //luam pozitia mouse-ului de pe window
     double radiusPoint = pixels[0].getRadius(); //luam raza primului punct 
 
+    auto startItPixels = pixels.begin();
+    //daca e cazul sa stergem puncte 
     for (int i = 0; i < pixels.size(); i++) { //parcurgem toate punctele desenate pana acum 
         sf::Vector2f pixelPos = pixels[i].getPosition();//stocam pozitia punctului curent
         if (Distance(pixelPos,sf::Vector2f(mousePos.x,mousePos.y)) <= radiusPoint) { //daca radiera(cursorul) intersecteaza punctul
-            pixels.erase(pixels.begin() + i);//stergem punctul 
+            pixels.erase(startItPixels + i);//stergem punctul 
         }
     }
+    auto startItSquares = squares.begin();
+    //daca e cazul sa stergem patrate 
+    for (int i = 0; i < squares.size(); i++) {
+        sf::Vector2f squarePos = squares[i].getPosition();
+        sf::Vector2f squareSize = squares[i].getSize();
+        if (mousePos.x > squarePos.x && mousePos.x < squarePos.x + squareSize.x && mousePos.y > squarePos.y && mousePos.y < squarePos.y + squareSize.y) {
+            squares.erase(startItSquares + i);
+        }
+    }
+    auto startItCircles = circleShapes.begin();
+    //daca e cazul sa stergem cercuri 
+    for (int i = 0; i < circleShapes.size(); i++) {
+        sf::Vector2f circlePos = circleShapes[i].getPosition();
+        double radius = circleShapes[i].getRadius();
+
+        if (Distance(circlePos, sf::Vector2f(mousePos.x, mousePos.y)) <= radius) {
+            circleShapes.erase(startItCircles + i);
+        }
+    }
+    auto startItTriangles = triangleShapes.begin();
+    sf::Vector2f pointA, pointB, pointC;
+    //daca e cazul sa stergem triunghiuri
+    for (int i = 0; i < triangleShapes.size(); i++) {
+        sf::Vector2f center = triangleShapes[i].getPosition();
+        double radius = triangleShapes[i].getRadius();
+
+        //obtinem punctele de la capetele din triunghiul echilateral (nu e chiar echilateral dar aproximam)
+        pointA.x = center.x;
+        pointA.y = center.y - radius;
+
+        pointB.x = center.x - radius / 2;
+        pointB.y = center.y + radius * std::sqrt(3) / 2;
+
+        pointC.x = center.x + radius / 2;
+        pointC.y = center.y + radius * std::sqrt(3) / 2;
+
+        //metoda de verificare cu arii 
+        long double area = AreaTriangle(pointA.x, pointA.y, pointB.x, pointB.y, pointC.x, pointC.y);
+        long double a1 = AreaTriangle(pointA.x, pointA.y, pointB.x, pointB.y, mousePos.x, mousePos.y);
+        long double a2 = AreaTriangle(pointB.x, pointB.y, mousePos.x, mousePos.y, pointC.x, pointC.y);
+        long double a3 = AreaTriangle(pointC.x, pointC.y, mousePos.x, mousePos.y, pointA.x, pointA.y);
+
+        if (a1 + a2 + a3 == area) {//inseamna ca radiera este in interiorul triunghiului 
+            triangleShapes.erase(startItTriangles + i);
+        }
+    }
+
+
 }
+
 int main()
 {
     sf::RenderWindow window(sf::VideoMode(1280, 720), "SPAINT!");//initialize the window
@@ -288,14 +345,6 @@ int main()
                     }
                 }
                 else if (eraserEnabled) {
-                    //std::string p = sizeTextBox.getText().getString();//preluam valoarea scrisa in textbox 
-                    //lineSize = std::atoi(p.c_str());//convertim in int 
-
-                    //sf::CircleShape sh2(lineSize); //la raza pixelului setam valoarea din texbox
-                    //sh2.setPosition(sf::Vector2f(mousePos.x, mousePos.y));
-                    //sh2.setFillColor(sf::Color::White); //setam pe white culoarea 
-
-                    //erasedPixels.push_back(sh2);
                     std::cout << "eraser enabled\n";
                     DeleteWithEraser(window, pixels, squareShapes, circleShapes, triangles, lines);
                 }
