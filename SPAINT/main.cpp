@@ -17,8 +17,8 @@ void OnClickButton(sf::RenderWindow& window, Button& button, Canvas& canvas, sf:
     }
     if (button.isMouseOver(window) && button.getText().getString() == "open") { //daca a fost dat click pe butonul open 
         std::cout << "open button clicked\n";
-        background.loadFromFile(canvas.Import());//incarcam in textura imaginea selectata de user
         backgroundSprite.setTexture(background);//sprite-ul pt background va contine aceasta textura
+        background.loadFromFile(canvas.Import());//incarcam in textura imaginea selectata de user
         backgroundSprite.setColor(sf::Color(255,255,255,255));//setam sa fie opaca imaginea . culorile ei originale
     }
     if (button.isMouseOver(window) && button.getText().getString() == "clear") {//daca a fost dat click pe butonul clear 
@@ -84,88 +84,95 @@ long double AreaTriangle(int x1, int y1, int x2, int y2, int x3, int y3)
 //function which contains the behaviour of the eraser
 void DeleteWithEraser(sf::RenderWindow& window, std::vector<sf::CircleShape>& pixels, std::vector<sf::RectangleShape>& squares, std::vector<sf::CircleShape>& circleShapes, std::vector<sf::CircleShape>& triangleShapes, std::vector<sf::VertexArray>& lines, float pixelRadius) {
     sf::Vector2i mousePos = sf::Mouse::getPosition(window); //luam pozitia mouse-ului de pe window
-
-    auto startItPixels = pixels.begin();
-    //if we have to delete any pixel/point/circle
-    for (int i = 0; i < pixels.size(); i++) { //go through all the points drawn till now 
-        sf::Vector2f pixelPos = pixels[i].getPosition();//get the position of current point(pixel)
-        //if the distance from eraser(mousePosition) to center of pixel is lower than radius  
-        //it means we have to delete the current circle(pixel) because the user erase it 
-        if (Distance(pixelPos,sf::Vector2f(mousePos.x,mousePos.y)) <= pixelRadius) { 
-            pixels.erase(startItPixels + i);//delete the point 
+    if(pixels.size()){
+        //if we have to delete any pixel/point/circle
+        for (int i = 0; i < pixels.size(); i++) { //go through all the points drawn till now 
+            auto startItPixels = pixels.begin();//initializam iteratorul aici pt ca begin-ul se modifica daca tot sterg
+            sf::Vector2f pixelPos = pixels[i].getPosition();//get the position of current point(pixel)
+            //if the distance from eraser(mousePosition) to center of pixel is lower than radius  
+            //it means we have to delete the current circle(pixel) because the user erase it 
+            if (Distance(pixelPos,sf::Vector2f(mousePos.x,mousePos.y)) <= pixelRadius) { 
+                pixels.erase(startItPixels + i);//delete the point 
+            }
         }
     }
-    auto startItSquares = squares.begin();
-    //if we have to delete any square
-    for (int i = 0; i < squares.size(); i++) {
-        sf::Vector2f squarePos = squares[i].getPosition(); //get the position of current drawn square
-        sf::Vector2f squareSize = squares[i].getSize();    //get the size of current drawn square
-        //if the mousePosition is in the current square
-        if (mousePos.x > squarePos.x && mousePos.x < squarePos.x + squareSize.x && 
-                        mousePos.y > squarePos.y && mousePos.y < squarePos.y + squareSize.y) {
-            squares.erase(startItSquares + i);//delete the square
+    if (squares.size()) {
+        //if we have to delete any square
+        for (int i = 0; i < squares.size(); i++) {
+            auto startItSquares = squares.begin();
+            sf::Vector2f squarePos = squares[i].getPosition(); //get the position of current drawn square
+            sf::Vector2f squareSize = squares[i].getSize();    //get the size of current drawn square
+            //if the mousePosition is in the current square
+            if (mousePos.x > squarePos.x && mousePos.x < squarePos.x + squareSize.x &&
+                mousePos.y > squarePos.y && mousePos.y < squarePos.y + squareSize.y) {
+                squares.erase(startItSquares + i);//delete the square
+            }
         }
     }
-    auto startItCircles = circleShapes.begin();
-    //similar as the pixel erasing part (see line 90)
-    for (int i = 0; i < circleShapes.size(); i++) {
-        sf::Vector2f circlePos = circleShapes[i].getPosition();
-        double radius = circleShapes[i].getRadius();
-        if (Distance(circlePos, sf::Vector2f(mousePos.x, mousePos.y)) <= radius)
-            circleShapes.erase(startItCircles + i);
-    }
-    auto startItTriangles = triangleShapes.begin();
-    sf::Vector2f pointA, pointB, pointC;//coordinates of the points which are defining the triangle
-    //if it's the case to delete a triangle 
-    for (int i = 0; i < triangleShapes.size(); i++) {
-        sf::Vector2f center = triangleShapes[i].getPosition();//get current position 
-        double radius = triangleShapes[i].getRadius(); //the triangle is basicly a circle with 3 endpoints 
-        
-       //obtain the endpoints of the triangle (like an equilateral triangle but it's not exactly an equilateral)
-        pointA.x = center.x;
-        pointA.y = center.y - radius;
-
-        pointB.x = center.x - radius / 2;
-        pointB.y = center.y + radius * std::sqrt(3) / 2;
-
-        pointC.x = center.x + radius / 2;
-        pointC.y = center.y + radius * std::sqrt(3) / 2;
-
-        //the method with the area.
-        long double area = AreaTriangle(pointA.x, pointA.y, pointB.x, pointB.y, pointC.x, pointC.y);
-        long double a1 = AreaTriangle(pointA.x, pointA.y, pointB.x, pointB.y, mousePos.x, mousePos.y);
-        long double a2 = AreaTriangle(pointB.x, pointB.y, mousePos.x, mousePos.y, pointC.x, pointC.y);
-        long double a3 = AreaTriangle(pointC.x, pointC.y, mousePos.x, mousePos.y, pointA.x, pointA.y);
-
-        if (a1 + a2 + a3 == area) {//it means that eraser is inside of the current triangle
-            triangleShapes.erase(startItTriangles + i);
+    if (circleShapes.size()) {
+        //similar as the pixel erasing part (see line 90)
+        for (int i = 0; i < circleShapes.size(); i++) {
+            auto startItCircles = circleShapes.begin();
+            sf::Vector2f circlePos = circleShapes[i].getPosition();
+            double radius = circleShapes[i].getRadius();
+            if (Distance(circlePos, sf::Vector2f(mousePos.x, mousePos.y)) <= radius)
+                circleShapes.erase(startItCircles + i);
         }
     }
-    //if we have to delete lines
-    auto startItLines = lines.begin();
-    for (int i = 0; i < lines.size(); i++) {
-        sf::Vertex v1 = lines[i][0];//first point of current line
-        sf::Vertex v2 = lines[i][1];//second point of  current line
-        //calculate slope
-        double slope = (v1.position.y - v2.position.y) / (v1.position.x - v2.position.x); 
-        //daca distanta de la mouse pana la linie e mai mica decat 0.1 atunci inseamna ca trebuie stearsa linia 
-        //avem nevoie de ecuatia dreptei 
-        //y = m * x + n 
-        long n = v2.position.y - slope * v2.position.x; //aflam pe n inlocuind in formula de mai sus pe x si y cu coordonatele 
-                                                        //punctului v2
-        //=> m*x - y + n == 0 - asta e ecuatia pt care folosim formula distantei de la un punct (pozitia radierei) la o dreapta 
-        long distance = std::abs(slope * mousePos.x - 1 * mousePos.y + n) / std::sqrt(slope * slope + 1);
-        if (distance < 1)
-            lines.erase(startItLines + i);
-    }
+    if (triangleShapes.size()) {
+        sf::Vector2f pointA, pointB, pointC;//coordinates of the points which are defining the triangle
+                                                //if it's the case to delete a triangle 
+        for (int i = 0; i < triangleShapes.size(); i++) {
+            auto startItTriangles = triangleShapes.begin();
+            sf::Vector2f center = triangleShapes[i].getPosition();//get current position 
+            double radius = triangleShapes[i].getRadius(); //the triangle is basicly a circle with 3 endpoints 
 
+           //obtain the endpoints of the triangle (like an equilateral triangle but it's not exactly an equilateral)
+            pointA.x = center.x;
+            pointA.y = center.y - radius;
+
+            pointB.x = center.x - radius / 2;
+            pointB.y = center.y + radius * std::sqrt(3) / 2;
+
+            pointC.x = center.x + radius / 2;
+            pointC.y = center.y + radius * std::sqrt(3) / 2;
+
+            //the method with the area.
+            long double area = AreaTriangle(pointA.x, pointA.y, pointB.x, pointB.y, pointC.x, pointC.y);
+            long double a1 = AreaTriangle(pointA.x, pointA.y, pointB.x, pointB.y, mousePos.x, mousePos.y);
+            long double a2 = AreaTriangle(pointB.x, pointB.y, mousePos.x, mousePos.y, pointC.x, pointC.y);
+            long double a3 = AreaTriangle(pointC.x, pointC.y, mousePos.x, mousePos.y, pointA.x, pointA.y);
+
+            if (a1 + a2 + a3 == area) {//it means that eraser is inside of the current triangle
+                triangleShapes.erase(startItTriangles + i);
+            }
+        }
+    }
+    if (lines.size()) {
+        //if we have to delete lines
+        auto startItLines = lines.begin();
+        for (int i = 0; i < lines.size(); i++) {
+            sf::Vertex v1 = lines[i][0];//first point of current line
+            sf::Vertex v2 = lines[i][1];//second point of  current line
+            //calculate slope
+            double slope = (v1.position.y - v2.position.y) / (v1.position.x - v2.position.x);
+            //daca distanta de la mouse pana la linie e mai mica decat 0.1 atunci inseamna ca trebuie stearsa linia 
+            //avem nevoie de ecuatia dreptei 
+            //y = m * x + n 
+            long n = v2.position.y - slope * v2.position.x; //aflam pe n inlocuind in formula de mai sus pe x si y cu coordonatele 
+                                                            //punctului v2
+            //=> m*x - y + n == 0 - asta e ecuatia pt care folosim formula distantei de la un punct (pozitia radierei) la o dreapta 
+            long distance = std::abs(slope * mousePos.x - 1 * mousePos.y + n) / std::sqrt(slope * slope + 1);
+            if (distance < 1)
+                lines.erase(startItLines + i);
+        }
+    }
 }
 
 int main()
 {
     sf::RenderWindow window(sf::VideoMode(1280, 720), "SPAINT!");//initialize the window
     sf::Font f;
-
     if (!f.loadFromFile("BalooTammudu2-Regular.ttf"))
         std::cout << "could not load font\n";
 
@@ -182,11 +189,13 @@ int main()
     Button blueCol(sf::Vector2f(1200, 237), btnColorSize, sf::Color::Blue, f, "", sf::Color::Blue);
     Button greenCol(sf::Vector2f(1000, 337), btnColorSize, sf::Color::Green, f, "", sf::Color::Green);
     Button purpleCol(sf::Vector2f(1200, 337), btnColorSize, sf::Color::Magenta, f, "", sf::Color::Magenta);
+
     //Buttons for shape buttons
     Button squareButton(sf::Vector2f(1000, 500), sf::Vector2f(100, 50), sf::Color::Transparent, f, "", sf::Color::Magenta);
     Button circleButton(sf::Vector2f(1200, 500), sf::Vector2f(50, 50), sf::Color::Transparent, f, "Circle", sf::Color::Transparent);
     Button triangleButton(sf::Vector2f(1000, 600), sf::Vector2f(100, 50), sf::Color::Transparent, f, "Triangle", sf::Color::Transparent);
     Button lineButton(sf::Vector2f(1200, 600), sf::Vector2f(100, 50), sf::Color::Transparent, f, "Line", sf::Color::Transparent);
+
     //Eraser button
     Button eraserButton(sf::Vector2f(1000, 35), btnColorSize, sf::Color::White, f, "", sf::Color::Transparent);
 
