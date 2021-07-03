@@ -9,6 +9,7 @@ Canvas::Canvas(sf::Vector2f size, sf::Vector2f pos, sf::Color col)
 	workSpace.setFillColor(col);
 }
 
+//returns the path
 std::string Canvas::Import()
 {
     std::string path = openfile();
