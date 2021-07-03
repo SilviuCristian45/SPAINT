@@ -85,15 +85,14 @@ long double AreaTriangle(int x1, int y1, int x2, int y2, int x3, int y3)
     return abs((x1 * static_cast<long double>(y2 - y3) + x2 * static_cast<long double>(y3 - y1) + x3 * static_cast<long double>(y1 - y2)) / 2.0);
 }
 
-void DeleteWithEraser(sf::RenderWindow& window, std::vector<sf::CircleShape>& pixels, std::vector<sf::RectangleShape>& squares, std::vector<sf::CircleShape>& circleShapes, std::vector<sf::CircleShape>& triangleShapes, std::vector<sf::VertexArray>& lines) {
+void DeleteWithEraser(sf::RenderWindow& window, std::vector<sf::CircleShape>& pixels, std::vector<sf::RectangleShape>& squares, std::vector<sf::CircleShape>& circleShapes, std::vector<sf::CircleShape>& triangleShapes, std::vector<sf::VertexArray>& lines, float pixelRadius) {
     sf::Vector2i mousePos = sf::Mouse::getPosition(window); //luam pozitia mouse-ului de pe window
-    double radiusPoint = pixels[0].getRadius(); //luam raza primului punct 
 
     auto startItPixels = pixels.begin();
     //daca e cazul sa stergem puncte 
     for (int i = 0; i < pixels.size(); i++) { //parcurgem toate punctele desenate pana acum 
         sf::Vector2f pixelPos = pixels[i].getPosition();//stocam pozitia punctului curent
-        if (Distance(pixelPos,sf::Vector2f(mousePos.x,mousePos.y)) <= radiusPoint) { //daca radiera(cursorul) intersecteaza punctul
+        if (Distance(pixelPos,sf::Vector2f(mousePos.x,mousePos.y)) <= pixelRadius) { //daca radiera(cursorul) intersecteaza punctul
             pixels.erase(startItPixels + i);//stergem punctul 
         }
     }
@@ -102,7 +101,8 @@ void DeleteWithEraser(sf::RenderWindow& window, std::vector<sf::CircleShape>& pi
     for (int i = 0; i < squares.size(); i++) {
         sf::Vector2f squarePos = squares[i].getPosition();
         sf::Vector2f squareSize = squares[i].getSize();
-        if (mousePos.x > squarePos.x && mousePos.x < squarePos.x + squareSize.x && mousePos.y > squarePos.y && mousePos.y < squarePos.y + squareSize.y) {
+        if (mousePos.x > squarePos.x && mousePos.x < squarePos.x + squareSize.x &&
+                        mousePos.y > squarePos.y && mousePos.y < squarePos.y + squareSize.y) {
             squares.erase(startItSquares + i);
         }
     }
@@ -143,7 +143,21 @@ void DeleteWithEraser(sf::RenderWindow& window, std::vector<sf::CircleShape>& pi
             triangleShapes.erase(startItTriangles + i);
         }
     }
-
+    //daca e cazul sa stergem linii 
+    auto startItLines = lines.begin();
+    for (int i = 0; i < lines.size(); i++) {
+        sf::Vertex v1 = lines[i][0];
+        sf::Vertex v2 = lines[i][1];
+        double slope = (v1.position.y - v2.position.y) / (v1.position.x - v2.position.x);
+        //daca distanta de la mouse pana la slope e mai mica decat 0.1 atunci inseamna ca trebuie stearsa linia 
+        //avem nevoie de ecuatia dreptei 
+        //y = m * x + n 
+        long n = v2.position.y - slope * v2.position.x; //aflam pe n inlocuind in formula de mai sus pe x si y cu coordonatele punctului v2
+        //=> m*x - y + n == 0 - asta e ecuatia pt care folosim formula distantei de la un punct (pozitia radierei) la o dreapta 
+        long distance = std::abs(slope * mousePos.x - 1 * mousePos.y + n) / std::sqrt(slope * slope + 1);
+        if (distance < 1)
+            lines.erase(startItLines + i);
+    }
 
 }
 
@@ -346,7 +360,9 @@ int main()
                 }
                 else if (eraserEnabled) {
                     std::cout << "eraser enabled\n";
-                    DeleteWithEraser(window, pixels, squareShapes, circleShapes, triangles, lines);
+                    std::string p = sizeTextBox.getText().getString();//preluam valoarea scrisa in textbox 
+                    float pixelRadius = std::atof(p.c_str());
+                    DeleteWithEraser(window, pixels, squareShapes, circleShapes, triangles, lines, pixelRadius);
                 }
                 else {//the user is drawing free hand if no specific shape is selected
 
